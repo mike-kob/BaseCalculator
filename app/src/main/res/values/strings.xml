@@ -1,0 +1,10 @@
+<resources>
+    <string name="calc_activity">Calculator</string>
+    <string name="convert_activity">Converter</string>
+    <string-array name="operations">
+        <item>+</item>
+        <item>-</item>
+        <item>*</item>
+        <item>/</item>
+    </string-array>
+</resources>
