@@ -1,6 +1,5 @@
 package com.example.android.baseconverter2;
 
-import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,7 +25,12 @@ public class CalculatorActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculator);
-        spinner = (Spinner) findViewById(R.id.spinner);
+
+        initializeSpinner();
+    }
+
+    private void initializeSpinner() {
+        spinner = findViewById(R.id.spinner);
         adapter = ArrayAdapter.createFromResource(this, R.array.operations, R.layout.spinner_layout);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item);
@@ -44,144 +48,74 @@ public class CalculatorActivity extends AppCompatActivity {
         });
     }
 
-    public void calc(View view) {
+    public void onCalcAction(View view) {
+        hideKeyboard();
 
-        //This block hides keyboard after clicking Convert button
-        InputMethodManager inputManager = (InputMethodManager)
-                getSystemService(Context.INPUT_METHOD_SERVICE);
+        EditText p1 = findViewById(R.id.editText1);
+        EditText p2 = findViewById(R.id.editText2);
 
-        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-                InputMethodManager.HIDE_NOT_ALWAYS);
-        //--------------------------------------------------------
-
-        EditText p1 = (EditText) findViewById(R.id.editText1);
-        EditText p2 = (EditText) findViewById(R.id.editText2);
-        int radixInput =0;
-        EditText r1 = (EditText) findViewById(R.id.radixInput);
+        int radixInput = 0;
+        EditText r1 = findViewById(R.id.radixInput);
 
         if (r1.getText().toString().equals("")) {
+            Toast.makeText(getBaseContext(), "Enter radix, please", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            Toast.makeText(getBaseContext(),"Enter radix, please",Toast.LENGTH_SHORT).show();
-            return;
-        } else{
-            radixInput = new Integer(r1.getText().toString());
-            if(radixInput>36||radixInput<2){
-                Toast.makeText(getBaseContext(),"Radix must be from 2 to 36",Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-        if (p1.getText().toString().equals("") || p2.getText().toString().equals("")) {
-            Toast.makeText(getBaseContext(),"You must enter both parameters",Toast.LENGTH_SHORT).show();
+        String numberStr = r1.getText().toString();
+        radixInput = Integer.parseInt(numberStr);
+
+        if (radixInput > 36 || radixInput < 2) {
+            Toast.makeText(getBaseContext(), "Radix must be from 2 to 36", Toast.LENGTH_SHORT).show();
             return;
         }
+
         String param1 = p1.getText().toString();
         String param2 = p2.getText().toString();
+        if (param1.isEmpty() || param2.isEmpty()) {
+            Toast.makeText(getBaseContext(), "You must enter both parameters", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-
-        Verifier ver = new Verifier(param1,radixInput);
-        if(!ver.isCorrect()){
-            Toast.makeText(getBaseContext(),"A parameter has illegal digits",Toast.LENGTH_SHORT).show();
+        Verifier ver = new Verifier(param1, radixInput);
+        if (!ver.isCorrect()) {
+            Toast.makeText(getBaseContext(), "A parameter has illegal digits", Toast.LENGTH_SHORT).show();
             return;
         }
 
         ver = new Verifier(param2, radixInput);
-        if(!ver.isCorrect()){
-            Toast.makeText(getBaseContext(),"A parameter has illegal digits",Toast.LENGTH_SHORT).show();
+        if (!ver.isCorrect()) {
+            Toast.makeText(getBaseContext(), "A parameter has illegal digits", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String result = Calculator.getResult(param1,param2,radixInput,currentOperation);
+        String result = Calculator.getResult(param1, param2, radixInput, currentOperation);
 
-        TextView t1 = (TextView)findViewById(R.id.answerConvert);
+        TextView t1 = findViewById(R.id.answerConvert);
         t1.setText(result);
 
-        TextView t2 = (TextView)findViewById((R.id.answer_in_decimal));
-        if(result.equals("Error: cannot divide by zero!")){
+        TextView t2 = findViewById((R.id.answer_in_decimal));
+        if (result.equals("Error: cannot divide by zero!")) {
             t2.setText(result);
         } else {
-            t2.setText(Converter.convertFrom(result,radixInput));
+            t2.setText(Converter.convertFrom(result, radixInput));
         }
 
     }
 
-    public void changeActivityToConverter(View view){
-       /* Intent changeToConverter = new Intent(getApplicationContext(),ConverterActivity.class);
-        startActivity(changeToConverter);*/
-       setContentView(R.layout.activity_converter);
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        View view = getCurrentFocus();
+        if (view == null) {
+            view = new View(this);
+        }
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
-    public void convert(View view){
-
-        //This block hides keyboard after clicking Convert button
-        InputMethodManager inputManager = (InputMethodManager)
-                getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-                InputMethodManager.HIDE_NOT_ALWAYS);
-        //--------------------------------------------------------
-
-        EditText num = (EditText)findViewById(R.id.inputNumber);
-        EditText rFrom = (EditText)findViewById(R.id.inputRadixFrom);
-        EditText rTo = (EditText)findViewById(R.id.inputRadixTo);
-
-
-        int inputRadixFrom;
-        int inputRadixTo;
-
-        if (rFrom.getText().toString().equals("")||rTo.getText().toString().equals("")) {
-
-            Toast.makeText(getBaseContext(),"Enter radix, please",Toast.LENGTH_SHORT).show();
-            return;
-        } else{
-            inputRadixFrom = new Integer(rFrom.getText().toString());
-            inputRadixTo = new Integer(rTo.getText().toString());
-            if(inputRadixFrom>36||inputRadixFrom<2||inputRadixTo>36||inputRadixTo<2){
-                Toast.makeText(getBaseContext(),"Radix must be from 2 to 36",Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-        }
-
-        if(num.getText().toString().isEmpty()){
-            Toast.makeText(getBaseContext(),"Enter number, please",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Verifier ver = new Verifier(num.getText().toString(),inputRadixFrom);
-        if(!ver.isCorrect()){
-            Toast.makeText(getBaseContext(),"The number has illegal digits",Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-
-
-
-
-
-        String answer = Converter.convertFromTo(num.getText().toString(), inputRadixFrom, inputRadixTo);
-
-        TextView ans = (TextView)findViewById(R.id.answerConvert);
-        ans.setText(answer);
-
+    public void changeActivityToConverter(View view) {
+        Intent changeToConverter = new Intent(getApplicationContext(), ConverterActivity.class);
+        startActivity(changeToConverter);
     }
-    public void changeActivityToCalculator(View view){
-        /*Intent changeToCalculator = new Intent(getApplicationContext(),CalculatorActivity.class);
-        startActivity(changeToCalculator);*/
-        setContentView(R.layout.activity_calculator);
-        spinner = (Spinner) findViewById(R.id.spinner);
-        adapter = ArrayAdapter.createFromResource(this, R.array.operations, R.layout.spinner_layout);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                currentOperation = (byte) i;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-            }
-
 }
